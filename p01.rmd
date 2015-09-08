@@ -6,9 +6,11 @@ date: "Monday, September 07, 2015"
 output: html_document
 ---
 
+-----------------------------
+
 ## Introduction
 
-In this paper, the reaction times of some participants doing the *stroop task* will be analyzed. Te participants had to name the color of  word in two different scenarios. On the one hand, the actual word does not match the printed color and on the other hand both information correspond to each other. It will be analyzed if the congruent or incongruent information has an influence on the reaction times of the task (further details on wikipedia: [Stroop effect](https://en.wikipedia.org/wiki/Stroop_effect)).
+In this paper, the reaction times of some participants doing the **stroop task** will be analyzed. Te participants had to name the color of words in two different scenarios. On the one hand, the actual word does not match the printed color and on the other hand both information correspond to each other. It will be analyzed if the congruent or incongruent information has an influence on the reaction times of the task (further details on wikipedia: [Stroop effect](https://en.wikipedia.org/wiki/Stroop_effect)).
 
 The provided sample data contains 24 participants who took the stroop task ([Data Source](https://drive.google.com/file/d/0B9Yf01UaIbUgQXpYb2NhZ29yX1U/view)). For each participant the reaction time in seconds for the congruent and incongruent task was recorded. 
 
@@ -26,7 +28,7 @@ Alternative Hypothesis: The reaction times for boths tasks are different.
 
 We presume that thee is a difference in reaction times because incongruent information are harder to handle intellectually. We can prove the assumption if we are able to reject the null hypothesis. The probability that the reaction times for both tasks are the same and the observed reaction times in the sample differ only accidentally is at most $\alpha = 5\%$.
 
-We will use a t-test for the statistical analysis.On the one hand, the population mean and standard deviation for reaction times on both tasks are unknown and have to be estimated by the sample. On the other hand, the sample size quite small such that the normal distribution cannot be used as an approximation. Consequently, the t-test has to be used for the statisitcal analysis. 
+We will use a t-test for the statistical analysis.On the one hand, the population mean and standard deviation for reaction times on both tasks are unknown and have to be estimated by the sample. On the other hand, the sample size quite small such that the normal distribution cannot be used as an approximation. Consequently, the t-test has to be used for the statisitcal analysis. We assume that the variances for both stroop tasks are different.
 
 ## Question 3
 **Report some descriptive statistics regarding this dataset. Include at least one measure of central tendency and at least one measure of variability.**
@@ -43,6 +45,8 @@ stdDevCongruent <- sd(stroopData$Congruent)
 
 meanIncongruent <- mean(stroopData$Incongruent)
 stdDevIncongruent <- sd(stroopData$Incongruent)
+
+n <- length(stroopData[,1])
 ```
 
 Measure | Congruent | Incongruent
@@ -78,15 +82,43 @@ This plot shows both the data points of the observations and the density for bot
 ## Question 5
 **Now, perform the statistical test and report your results. What is your confidence level and your critical statistic value? Do you reject the null hypothesis or fail to reject it? Come to a conclusion in terms of the experiment task. Did the results match up with your expectations?**
 
-bla bla
+```{r}
+######### Welch's t test with unequal variances #########
+meanDifference <- meanCongruent - meanIncongruent
+standardError <- sqrt(((stdDevCongruent)^2 + (stdDevIncongruent)^2)/n)
+
+t <- abs(meanDifference / standardError)
+alpha <- 0.05
+df <- round(((((stdDevCongruent)^2) / n + ((stdDevIncongruent)^2) / n)^2) / 
+      (((stdDevCongruent)^4) / (n^2 * (n-1)) + ((stdDevIncongruent)^4) / (n^2 * (n-1))))
+tCritical <- qt(1-alpha/2, df)
+```
+
+Variable | Value
+-------- | ----------
+Mean Difference [sec] | `r meanDifference`
+Standard Error of Difference [sec] | `r standardError`
+t-Statistic | `r t`
+Degrees of Freedom | `r df`
+t-Critical Value at $\alpha = 5\%$ | `r tCritical`
+
+The null hypothesis can be rejected with a probability error of $\alpha = 5\%$, because the t-Statistic is greater than the t-Critical Value. Hence, the reaction times for boths tasks are different. If the null hypothesis was true, the probability of getting the observed mean difference in a random sample would be far less than 0.1% (`r pt(-t, df)`). This is extremely unlikely. 
+
+The results of the statisitcal test confirm the observations in the violin plot of question 4 and match the expectations at the beginning. Consequently, the participants need longer reaction times for the stroop task if color and word are incongruent.
 
 ## Question 6
 **Optional: What do you think is responsible for the effects observed? Can you think of an alternative or similar task that would result in a similar effect? Some research about the problem will be helpful for thinking about these two questions!**
 
-bla bla
+Generally, it is plausible that a participant can name the color of a word easier if the actual word is congruent to the color. The participant will just read out the written words instead of paying attention to the colors when he / she realizes that both information always match. When the word does not match the color, the participant has to distinguish the color of the word and must not be confused by the word he / she reads. Hence the process of naming the incongruent colors is more complex and requires more time. 
+
+An alternative similar stroop test would be to name the location (left, right, up, down) of the word "left" within a rectangle (see [Interactive "Directional Stroop" Effect Experiment](https://faculty.washington.edu/chudler/java/readyd.html)). In three out of four cases the information are incongruent.
 
 ## Sources
 
-* [Article Wikipedia Stroop Effect](https://en.wikipedia.org/wiki/Stroop_effect)
 * [Data Set](https://drive.google.com/file/d/0B9Yf01UaIbUgQXpYb2NhZ29yX1U/view)
+* [Neuroscience For Kids](https://faculty.washington.edu/chudler/words.html)
 * [R Markdown Cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+* [Stroop Effect, Article Wikipedia](https://en.wikipedia.org/wiki/Stroop_effect)
+* [Welch's t test, Article Wikipedia](https://en.wikipedia.org/wiki/Welch%27s_t_test)
+
+----------------------------

@@ -1,0 +1,92 @@
+---
+title: "Test a Perceptual Phenomenon"
+subtitle: "Udacity Nanodegree Data Analyst Project 1"
+author: "Daniel Pöhle"
+date: "Monday, September 07, 2015"
+output: html_document
+---
+
+## Introduction
+
+In this paper, the reaction times of some participants doing the *stroop task* will be analyzed. Te participants had to name the color of  word in two different scenarios. On the one hand, the actual word does not match the printed color and on the other hand both information correspond to each other. It will be analyzed if the congruent or incongruent information has an influence on the reaction times of the task (further details on wikipedia: [Stroop effect](https://en.wikipedia.org/wiki/Stroop_effect)).
+
+The provided sample data contains 24 participants who took the stroop task ([Data Source](https://drive.google.com/file/d/0B9Yf01UaIbUgQXpYb2NhZ29yX1U/view)). For each participant the reaction time in seconds for the congruent and incongruent task was recorded. 
+
+## Question 1
+**What is the independent variable? What is the dependent variable?**
+
+The independent variable is the type of task (congruent or incongruent). The dependent variable is the reaction time for completing the stroop task.
+
+## Question 2
+**What is an appropriate set of hypotheses for this task? What kind of statistical test do you expect to perform? Justify your choices.**
+
+Null hypothesis: The reaction times for both tasks are the same.
+
+Alternative Hypothesis: The reaction times for boths tasks are different.
+
+We presume that thee is a difference in reaction times because incongruent information are harder to handle intellectually. We can prove the assumption if we are able to reject the null hypothesis. The probability that the reaction times for both tasks are the same and the observed reaction times in the sample differ only accidentally is at most $\alpha = 5\%$.
+
+We will use a t-test for the statistical analysis.On the one hand, the population mean and standard deviation for reaction times on both tasks are unknown and have to be estimated by the sample. On the other hand, the sample size quite small such that the normal distribution cannot be used as an approximation. Consequently, the t-test has to be used for the statisitcal analysis. 
+
+## Question 3
+**Report some descriptive statistics regarding this dataset. Include at least one measure of central tendency and at least one measure of variability.**
+
+```{r, echo=FALSE, warning=FALSE}
+library(ggplot2)
+library(reshape2)
+setwd("E:/git/p01/p01")
+```
+```{r}
+stroopData <- read.csv(file = "./stroopdata.csv", stringsAsFactors = F)
+meanCongruent <- mean(stroopData$Congruent)
+stdDevCongruent <- sd(stroopData$Congruent)
+
+meanIncongruent <- mean(stroopData$Incongruent)
+stdDevIncongruent <- sd(stroopData$Incongruent)
+```
+
+Measure | Congruent | Incongruent
+------- | --------- | -----------
+Average Reaction Time [sec] | `r meanCongruent` | `r meanIncongruent`
+Standard Deviation Reaction Time [sec] |   `r stdDevCongruent`    | `r stdDevIncongruent`
+
+## Question 4
+**Provide one or two visualizations that show the distribution of the sample data. Write one or two sentences noting what you observe about the plot or plots.**
+
+```{r}
+ggplot() + theme_bw() +
+geom_histogram(binwidth = 3, alpha = 0.8, fill = "dodgerblue4", aes(x = stroopData$Congruent)) + 
+geom_histogram(binwidth = 3, alpha = 0.7, fill = "goldenrod1", aes(x = stroopData$Incongruent)) +
+annotate("text", x = 18, y = 8.5, label = "Congruent", color = "dodgerblue4") + 
+annotate("text", x = 25, y = 6.5, label = "Incongruent", color = "goldenrod1") +
+xlab("Reaction Times [sec]") +  ylab("Number of Paticipants") +
+ggtitle("Distribution of Reaction Times for Stroop Task")
+```
+
+The histogram shows the overlayed distribution of reaction times. In the time interval between 15 and 24 seconds there are observations of both types of stroop tasks. The distribution of reaction times for the incongruent task is more spread and has a higher variance.
+
+```{r, warning=FALSE, message=FALSE}
+stroopData <- melt(stroopData)
+ggplot(stroopData, aes(x=variable, y=value)) + theme_bw() + geom_violin(alpha=0.5, fill="darkgray") + 
+geom_jitter(color = "firebrick", position = position_jitter(w = 0.1, h = 0.1)) +
+xlab("Type of Task") +  ylab("Reaction Times [sec]") +
+ggtitle("Distribution of Reaction Times for Stroop Task")
+```
+
+This plot shows both the data points of the observations and the density for both task types. While the histogram suggests that there is a certain overlapping of both distributions, the violin plot suggests that the overlapping area is not that big.
+
+## Question 5
+**Now, perform the statistical test and report your results. What is your confidence level and your critical statistic value? Do you reject the null hypothesis or fail to reject it? Come to a conclusion in terms of the experiment task. Did the results match up with your expectations?**
+
+bla bla
+
+## Question 6
+**Optional: What do you think is responsible for the effects observed? Can you think of an alternative or similar task that would result in a similar effect? Some research about the problem will be helpful for thinking about these two questions!**
+
+bla bla
+
+## Sources
+
+* [Article Wikipedia Stroop Effect](https://en.wikipedia.org/wiki/Stroop_effect)
+* [Data Set](https://drive.google.com/file/d/0B9Yf01UaIbUgQXpYb2NhZ29yX1U/view)
+* [R Markdown Cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)

@@ -22,13 +22,13 @@ The independent variable is the type of task (congruent or incongruent). The dep
 ## Question 2
 **What is an appropriate set of hypotheses for this task? What kind of statistical test do you expect to perform? Justify your choices.**
 
-Null hypothesis: The reaction times for both tasks are the same.
+Null hypothesis: The reaction times for both tasks are the same in the population.
 
-Alternative Hypothesis: The reaction times for boths tasks are different.
+Alternative Hypothesis: The reaction times for boths tasks are different in the population.
 
-We presume that thee is a difference in reaction times because incongruent information are harder to handle intellectually. We can prove the assumption if we are able to reject the null hypothesis. The probability that the reaction times for both tasks are the same and the observed reaction times in the sample differ only accidentally is at most $\alpha = 5\%$.
+We presume that there is a difference in reaction times in the population because incongruent information are harder to handle intellectually. We can prove the assumption if we are able to reject the null hypothesis. The probability that reaction times for both tasks in the population are the same and the observed reaction times in the sample differ only accidentally will be at most $\alpha = 5\%$.
 
-We will use a t-test for the statistical analysis.On the one hand, the population mean and standard deviation for reaction times on both tasks are unknown and have to be estimated by the sample. On the other hand, the sample size quite small such that the normal distribution cannot be used as an approximation. Consequently, the t-test has to be used for the statisitcal analysis. We assume that the variances for both stroop tasks are different.
+We will use a dependent two-sided t-test for paired samples in the statistical analysis.The samples in the experiment are dependent because the same participants have been tested with both stroop tasks. We take the average and standard deviation of the differences in reaction times and test if it is significantly different from zero. The difference will be zero, if both reaction times are the same in the population.
 
 ## Question 3
 **Report some descriptive statistics regarding this dataset. Include at least one measure of central tendency and at least one measure of variability.**
@@ -57,40 +57,40 @@ Standard Deviation Reaction Time [sec] |   `r stdDevCongruent`    | `r stdDevInc
 ## Question 4
 **Provide one or two visualizations that show the distribution of the sample data. Write one or two sentences noting what you observe about the plot or plots.**
 
-```{r}
-ggplot() + theme_bw() +
-geom_histogram(binwidth = 3, alpha = 0.8, fill = "dodgerblue4", aes(x = stroopData$Congruent)) + 
-geom_histogram(binwidth = 3, alpha = 0.7, fill = "goldenrod1", aes(x = stroopData$Incongruent)) +
-annotate("text", x = 18, y = 8.5, label = "Congruent", color = "dodgerblue4") + 
-annotate("text", x = 25, y = 6.5, label = "Incongruent", color = "goldenrod1") +
-xlab("Reaction Times [sec]") +  ylab("Number of Paticipants") +
-ggtitle("Distribution of Reaction Times for Stroop Task")
-```
-
-The histogram shows the overlayed distribution of reaction times. In the time interval between 15 and 24 seconds there are observations of both types of stroop tasks. The distribution of reaction times for the incongruent task is more spread and has a higher variance.
-
 ```{r, warning=FALSE, message=FALSE}
-stroopData <- melt(stroopData)
-ggplot(stroopData, aes(x=variable, y=value)) + theme_bw() + geom_violin(alpha=0.5, fill="darkgray") + 
+stroopData2 <- stroopData
+stroopData2$ID <- as.factor(c(1:length(stroopData$Congruent)))
+stroopData2 <- melt(data = stroopData2)
+ggplot(stroopData2, aes(x=variable, y=value)) + theme_bw() + geom_violin(alpha=0.5, fill="darkgray") + 
 geom_jitter(color = "firebrick", position = position_jitter(w = 0.1, h = 0.1)) +
 xlab("Type of Task") +  ylab("Reaction Times [sec]") +
 ggtitle("Distribution of Reaction Times for Stroop Task")
 ```
 
-This plot shows both the data points of the observations and the density for both task types. While the histogram suggests that there is a certain overlapping of both distributions, the violin plot suggests that the overlapping area is not that big.
+This violin plot shows both the data points of the observations and the density for both task types. In the time interval between 15 and 24 seconds there are observations of both types of stroop tasks. The distribution of reaction times for the incongruent task is more spread and has a higher variance.
+
+```{r}
+ggplot(stroopData2, aes(x = ID, y = value, fill=variable)) + geom_bar(stat="identity", position="dodge") + theme_bw() +
+scale_fill_manual(values = c("dodgerblue4", "goldenrod1")) +
+xlab("ID of Participant") +  ylab("Reaction Times [sec]") +
+ggtitle("Comparison of Reaction Times for Each Participant")
+```
+
+In this barplot there is a direct comparison of reaction times for each participant of the sample. The reaction times for the task with incongruent information are greater than the reaction times for the task with congruent information in all cases of the sample. 
 
 ## Question 5
 **Now, perform the statistical test and report your results. What is your confidence level and your critical statistic value? Do you reject the null hypothesis or fail to reject it? Come to a conclusion in terms of the experiment task. Did the results match up with your expectations?**
 
 ```{r}
-######### Welch's t test with unequal variances #########
-meanDifference <- meanCongruent - meanIncongruent
-standardError <- sqrt(((stdDevCongruent)^2 + (stdDevIncongruent)^2)/n)
+######### Dependent t-test for paired samples #########
+difference <- stroopData$Congruent - stroopData$Incongruent
+meanDifference <- mean(difference)
+stdDevDifference <- sd(difference)
+standardError <- stdDevDifference / sqrt(n)
 
 t <- abs(meanDifference / standardError)
 alpha <- 0.05
-df <- round(((((stdDevCongruent)^2) / n + ((stdDevIncongruent)^2) / n)^2) / 
-      (((stdDevCongruent)^4) / (n^2 * (n-1)) + ((stdDevIncongruent)^4) / (n^2 * (n-1))))
+df <- n-1
 tCritical <- qt(1-alpha/2, df)
 ```
 
@@ -102,7 +102,7 @@ t-Statistic | `r t`
 Degrees of Freedom | `r df`
 t-Critical Value at $\alpha = 5\%$ | `r tCritical`
 
-The null hypothesis can be rejected with a probability error of $\alpha = 5\%$, because the t-Statistic is greater than the t-Critical Value. Hence, the reaction times for boths tasks are different. If the null hypothesis was true, the probability of getting the observed mean difference in a random sample would be far less than 0.1% (`r pt(-t, df)`). This is extremely unlikely. 
+The null hypothesis can be rejected with a probability error of $\alpha = 5\%$, because the t-Statistic is greater than the t-Critical Value. Hence, the reaction times for boths tasks are different. If the the reaction times for both tasks were equal in the population, the probability of getting the observed mean difference in a random sample would be far less than 0.1% (`r pt(-t, df)`). This is extremely unlikely. 
 
 The results of the statisitcal test confirm the observations in the violin plot of question 4 and match the expectations at the beginning. Consequently, the participants need longer reaction times for the stroop task if color and word are incongruent.
 
@@ -117,8 +117,8 @@ An alternative similar stroop test would be to name the location (left, right, u
 
 * [Data Set](https://drive.google.com/file/d/0B9Yf01UaIbUgQXpYb2NhZ29yX1U/view)
 * [Neuroscience For Kids](https://faculty.washington.edu/chudler/words.html)
+* [Paired Difference Test, Article Wikipedia](https://en.wikipedia.org/wiki/Paired_difference_test)
 * [R Markdown Cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
 * [Stroop Effect, Article Wikipedia](https://en.wikipedia.org/wiki/Stroop_effect)
-* [Welch's t test, Article Wikipedia](https://en.wikipedia.org/wiki/Welch%27s_t_test)
 
 ----------------------------
